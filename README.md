@@ -137,6 +137,9 @@ service named restart
 ```bash
 dig @192.168.0.217 google.com
 ```
+this shuld be your result :
+<img width="525" alt="image" src="https://github.com/user-attachments/assets/b7f55530-3d06-4cce-a81d-f281fb846a3a" />
+
 
 ## Option B: Installing Unbound
 
@@ -210,10 +213,7 @@ vi /usr/local/etc/unbound/unbound.conf
 
 Add the following configuration:
 ```yaml
-server:
-    # Identity
-    directory: "/usr/local/etc/unbound"
-    username: unbound
+
     
     # Network Interface Settings
     interface: 127.0.0.217
@@ -225,35 +225,9 @@ server:
     access-control: 192.168.0.217/32 allow
     access-control: 192.168.0.0/24 allow
     
-    # Basic Settings
-    do-ip4: yes
-    do-ip6: yes
-    do-udp: yes
-    do-tcp: yes
     
-    # Privacy Settings
-    hide-identity: yes
-    hide-version: yes
-    
-    # DNSSEC
-    auto-trust-anchor-file: "/usr/local/etc/unbound/root.key"
-    
-    # Performance Tuning
-    num-threads: 2
-    msg-cache-size: 64m
-    rrset-cache-size: 128m
 ```
 
-### B3. Root Hints and Trust Anchor
-
-#### Download Root Hints
-```bash
-fetch -o /usr/local/etc/unbound/root.hints https://www.internic.net/domain/named.root
-```
-
-#### Configure Root Trust Anchor
-```bash
-unbound-anchor -a "/usr/local/etc/unbound/root.key"
 ```
 
 ### B4. Start and Test
@@ -267,6 +241,7 @@ service unbound start
 ```bash
 dig @127.0.0.217 google.com
 ```
+<img width="525" alt="image" src="https://github.com/user-attachments/assets/dab42b09-e491-40dd-a48c-2443c44c95fb" />
 
 ## Maintenance and Monitoring
 
