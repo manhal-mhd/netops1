@@ -1,4 +1,4 @@
-# FreeBSD DNS Server Installation Guide
+# FreeBSD Cache-only DNS Server Installation Guide
 ## BIND and Unbound Implementation Options
 Last Updated: 2025-02-19 11:45:11 UTC
 Author: manhal-mhd
@@ -137,7 +137,7 @@ service named restart
 ```bash
 dig @192.168.0.217 google.com
 ```
-this shuld be your result :
+
 <img width="525" alt="image" src="https://github.com/user-attachments/assets/b7f55530-3d06-4cce-a81d-f281fb846a3a" />
 
 
