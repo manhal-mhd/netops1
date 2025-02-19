@@ -229,7 +229,10 @@ Add the following configuration:
 ```
 
 ```
-
+Verify Configuration
+   ```bash
+   unbound-checkconf          
+   ```
 ### B4. Start and Test
 
 #### Start Unbound
