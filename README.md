@@ -228,8 +228,7 @@ Add the following configuration:
     
 ```
 
-```
-Verify Configuration
+#### Check Configuration
    ```bash
    unbound-checkconf          
    ```
