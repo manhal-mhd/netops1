@@ -138,7 +138,7 @@ service named restart
 dig @192.168.0.217 google.com
 ```
 
-<img width="525" alt="image" src="https://github.com/user-attachments/assets/b7f55530-3d06-4cce-a81d-f281fb846a3a" />
+![image](https://github.com/user-attachments/assets/7e1ed96b-ff80-4a1b-9eb4-b70166b64526)
 
 
 ## Option B: Installing Unbound
@@ -243,7 +243,7 @@ service unbound start
 ```bash
 dig @127.0.0.217 google.com
 ```
-<img width="525" alt="image" src="https://github.com/user-attachments/assets/dab42b09-e491-40dd-a48c-2443c44c95fb" />
+![image](https://github.com/user-attachments/assets/d24ae920-6134-4ffd-ac03-49377b0c47a2)
 
 ## Maintenance and Monitoring
 
