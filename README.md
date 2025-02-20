@@ -9,6 +9,7 @@ Author: manhal-mhd
 3. [Option A: Installing BIND](#option-a-installing-bind)
 4. [Option B: Installing Unbound](#option-b-installing-unbound)
 5. [Important Notes on Compatibility](#important-notes-on-compatibility)
+6. [List of Dig Status and Flags](#list-of-dig-status-and-flags)
 
 ## Lab Environment Setup
 
@@ -322,6 +323,26 @@ service unbound status
 ### FreeBSD Resources
 - [FreeBSD Handbook - DNS Section](https://docs.freebsd.org/en/books/handbook/network-servers/#network-dns)
 
+## List of Dig Status and Flags
+
+`dig` is a powerful DNS query tool. Here are some common status codes and flags returned by `dig` along with their meanings:
+
+### Status Codes
+- `NOERROR`: The query completed successfully.
+- `FORMERR`: The server was unable to process the query due to a format error.
+- `SERVFAIL`: The server failed to complete the DNS request.
+- `NXDOMAIN`: The domain name does not exist.
+- `NOTIMP`: The server does not support the requested kind of query.
+- `REFUSED`: The server refused to answer for the query.
+
+### Flags
+- `qr`: Query/Response flag. Set to `1` for a response, and `0` for a query.
+- `aa`: Authoritative Answer flag. Indicates that the responding server is authoritative for the domain.
+- `tc`: Truncation flag. Indicates that the message was truncated.
+- `rd`: Recursion Desired flag. Indicates that the client wants recursion.
+- `ra`: Recursion Available flag. Indicates that the server supports recursion.
+- `ad`: Authentic Data flag. Indicates that the response has been authenticated.
+- `cd`: Checking Disabled flag. Indicates that DNSSEC validation was not performed.
+
 Last Updated: 2025-02-19 11:45:11 UTC
-Author: manhal-mhd# netops1
-# netops1
+Author: manhal-mhd
