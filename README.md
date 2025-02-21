@@ -587,182 +587,232 @@ service unbound restart
    # Update ports tree
    portsnap fetch update
    ```
-   ### Using Portupgrade for Port Management
+ ## Using Portinstall for Port Installation and Management
+Last Updated: 2025-02-21 12:08:15 UTC
+Author: manhal-mhd
 
-Portupgrade is a powerful tool for managing ports in FreeBSD, particularly useful when maintaining DNS servers and other system software. Here's how to use it effectively:
+Portinstall is part of the portupgrade suite of tools and provides an efficient way to install ports with dependency handling. It's particularly useful for installing DNS servers and related software.
 
-#### Installing Portupgrade
-```bash
-# Install portupgrade package
-pkg install portupgrade
+#### Basic Portinstall Usage
 
-# Initialize the package database
-pkgdb -F
-```
-
-#### Basic Portupgrade Commands
-
-1. **Upgrading Specific Ports**:
+1. **Simple Port Installation**:
    ```bash
-   # Upgrade BIND
-   portupgrade -R dns/bind920
+   # Install BIND
+   portinstall dns/bind920
 
-   # Upgrade Unbound
-   portupgrade -R dns/unbound
+   # Install Unbound
+   portinstall dns/unbound
    ```
 
-2. **Checking Port Dependencies**:
+2. **Installation with Options**:
    ```bash
-   # Check BIND dependencies
-   portupgrade -Rn dns/bind920
+   # Install with dependency handling
+   portinstall -R dns/bind920
 
-   # Check Unbound dependencies
-   portupgrade -Rn dns/unbound
+   # Install with interactive configuration
+   portinstall -c dns/unbound
    ```
 
-#### Advanced Portupgrade Features
+#### Advanced Features
 
-1. **Smart Upgrade Options**:
+1. **Batch Installation**:
    ```bash
-   # Upgrade all installed ports
-   portupgrade -a
+   # Install multiple ports at once
+   portinstall dns/bind920 dns/unbound dns/dnscrypt-proxy
 
-   # Upgrade ports and their dependencies
-   portupgrade -r dns/bind920
-
-   # Force rebuild of all dependencies
-   portupgrade -Rf dns/bind920
+   # Install with specific options
+   portinstall -N dns/bind920  # Don't upgrade dependencies
    ```
 
-2. **Package Database Maintenance**:
+2. **Pre-Installation Checks**:
    ```bash
-   # Check consistency of the package database
-   pkgdb -F
-
-   # Fix package database inconsistencies
-   pkgdb -L
-   ```
-
-#### Best Practices with Portupgrade
-
-1. **Before Major Upgrades**:
-   ```bash
-   # Update ports tree
-   portsnap fetch update
+   # Check dependencies without installing
+   portinstall -n dns/bind920
 
    # Check for conflicts
-   portupgrade -an
+   portinstall -C dns/unbound
    ```
 
-2. **After Installation Changes**:
-   ```bash
-   # Update shared libraries
-   pkgdb -L
-
-   # Clean up old distfiles
-   portsclean -DD
-   ```
-
-#### Common Portupgrade Options
+#### Common Portinstall Options
 
 | Option | Description | Example Use Case |
 |--------|-------------|-----------------|
-| `-n` | Dry run (no actual changes) | `portupgrade -n dns/bind920` |
-| `-R` | Also upgrade dependencies | `portupgrade -R dns/unbound` |
-| `-r` | Upgrade dependent ports | `portupgrade -r dns/bind920` |
-| `-f` | Force rebuild | `portupgrade -f dns/unbound` |
-| `-a` | Upgrade all outdated ports | `portupgrade -a` |
+| `-R` | Also install dependencies | `portinstall -R dns/bind920` |
+| `-n` | Dry run mode | `portinstall -n dns/unbound` |
+| `-c` | Configure before building | `portinstall -c dns/bind920` |
+| `-N` | Don't upgrade dependencies | `portinstall -N dns/unbound` |
+| `-f` | Force reinstall | `portinstall -f dns/bind920` |
 
-#### Troubleshooting Portupgrade
+#### Best Practices with Portinstall
 
-1. **Database Issues**:
+1. **Before Installation**:
    ```bash
-   # Rebuild package database
-   rm /var/db/pkg/pkgdb.db
-   pkgdb -U
+   # Update ports tree
+   portsnap fetch update
+
+   # Verify port existence
+   whereis bind920
+   whereis unbound
    ```
 
-2. **Dependency Problems**:
+2. **During Installation**:
    ```bash
-   # Fix broken dependencies
-   pkgdb -F
-   portupgrade -f affected-port
+   # Monitor installation progress
+   tail -f /var/log/messages
+
+   # Check port build logs
+   ls -l /usr/ports/dns/bind920/work/
    ```
 
-3. **Common Error Solutions**:
+#### Example Installation Workflows
+
+1. **Fresh DNS Server Installation**:
    ```bash
-   # Clear problematic builds
-   portsclean -C
+   # Install BIND with all dependencies
+   portinstall -R dns/bind920
 
-   # Remove all distfiles
-   portsclean -DD
+   # Post-installation configuration
+   cd /usr/local/etc/namedb
+   cp named.conf.sample named.conf
+   ```
 
+2. **Upgrading Existing Installation**:
+   ```bash
+   # Stop service
+   service named stop
+
+   # Reinstall with force option
+   portinstall -Rf dns/bind920
+
+   # Restart service
+   service named start
+   ```
+
+#### Troubleshooting Common Issues
+
+1. **Build Failures**:
+   ```bash
+   # Clean and retry
+   cd /usr/ports/dns/bind920
+   make clean
+   portinstall -f dns/bind920
+   ```
+
+2. **Dependency Issues**:
+   ```bash
+   # Rebuild dependencies
+   portinstall -rR dns/bind920
+
+   # Check installed dependencies
+   pkg info -d bind920
+   ```
+
+#### Integration with Other Port Tools
+
+1. **Using with Portupgrade**:
+   ```bash
+   # Install new port
+   portinstall dns/bind920
+
+   # Later upgrade using portupgrade
+   portupgrade -R dns/bind920
+   ```
+
+2. **Combining with Package System**:
+   ```bash
+   # Check if package exists
+   pkg search bind920
+
+   # If not, use portinstall
+   portinstall dns/bind920
+   ```
+
+#### Maintenance and Cleanup
+
+1. **Post-Installation Cleanup**:
+   ```bash
    # Clean work directories
    portsclean -WD
+
+   # Remove unused dependencies
+   pkg autoremove
    ```
 
-#### Example Workflow for DNS Server Updates
-
-1. **Preparing for Update**:
+2. **Regular Maintenance**:
    ```bash
    # Update ports tree
    portsnap fetch update
 
-   # Check database
-   pkgdb -F
-
-   # Verify current installations
-   pkg info | grep bind
-   pkg info | grep unbound
+   # Check for stale dependencies
+   pkg check -d
    ```
 
-2. **Upgrading DNS Servers**:
+#### Example: Complete DNS Server Setup Using Portinstall
+
+```bash
+# 1. Prepare system
+portsnap fetch extract
+portsnap fetch update
+
+# 2. Install BIND with custom options
+portinstall -c dns/bind920
+
+# 3. Install Unbound as backup
+portinstall dns/unbound
+
+# 4. Post-installation setup
+# For BIND
+sysrc named_enable="YES"
+cd /usr/local/etc/namedb
+cp named.conf.sample named.conf
+
+# For Unbound
+sysrc unbound_enable="YES"
+cd /usr/local/etc/unbound
+cp unbound.conf.sample unbound.conf
+
+# 5. Start services
+service named start
+# or
+service unbound start
+```
+
+#### Integration with System Maintenance
+
+1. **Automated Update Script**:
    ```bash
-   # For BIND:
-   service named stop
-   portupgrade -R dns/bind920
-   service named start
-
-   # For Unbound:
-   service unbound stop
-   portupgrade -R dns/unbound
-   service unbound start
-   ```
-
-3. **Post-Update Verification**:
-   ```bash
-   # Verify services
-   service named status
-   service unbound status
-
-   # Check versions
-   pkg info bind920
-   pkg info unbound
-   ```
-
-#### Integration with Ports System
-
-1. **Combined Usage**:
-   ```bash
+   #!/bin/sh
+   # Update script for DNS servers
+   
    # Update ports tree
    portsnap fetch update
-
-   # Upgrade using portupgrade
-   portupgrade -a
-
-   # Verify with pkg
-   pkg version -v
-   ```
-
-2. **Maintenance Schedule**:
-   ```bash
-   # Weekly maintenance (add to crontab)
-   portsnap fetch update
-   pkgdb -F
-   portupgrade -a
+   
+   # Check for updates
+   portinstall -n dns/bind920 dns/unbound
+   
+   # Perform updates if needed
+   portinstall -R dns/bind920 dns/unbound
+   
+   # Clean up
    portsclean -DD
+   pkg autoremove
    ```
 
-Last Updated: 2025-02-21 11:37:07 UTC
+2. **Monitoring Script**:
+   ```bash
+   #!/bin/sh
+   # Monitor DNS server versions
+   
+   echo "Installed versions:"
+   pkg info | grep -E 'bind920|unbound'
+   
+   echo "\nAvailable ports:"
+   cd /usr/ports/dns
+   make search name=bind920
+   make search name=unbound
+   ```
+
+Last Updated: 2025-02-21 12:08:15 UTC
 Author: manhal-mhd
+
 
