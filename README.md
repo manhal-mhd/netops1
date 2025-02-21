@@ -412,9 +412,6 @@ This command checks the status of the Unbound service.
 - `cd`: Checking Disabled flag. Indicates that DNSSEC validation was not performed.
 
 ## FreeBSD Ports and Packages System
-Last Updated: 2025-02-21 11:37:07 UTC
-Author: manhal-mhd
-
 FreeBSD offers two primary methods for installing software: Ports and Packages. Understanding both systems is crucial for managing DNS servers and other software on your FreeBSD system.
 
 ### 1. Package System (pkg)
