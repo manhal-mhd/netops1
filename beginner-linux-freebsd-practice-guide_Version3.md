@@ -296,6 +296,9 @@ I prepared a safe, self-contained bash script you can run to verify tasks from t
 
 Usage
 1. Save the script `lab-checks.sh` (provided in this package).
+   you can downlod the script using the following link 
+  curl -L -o lab-checks_Version2.sh "https://raw.githubusercontent.com/manhal-mhd/netops1/5b825545250c7415ef174cb272289a150f4494d2/lab-checks_Version2.sh" 
+  if you dont have curl , download it *_-
 2. Make it executable:
    chmod +x lab-checks.sh
 3. Run it:
