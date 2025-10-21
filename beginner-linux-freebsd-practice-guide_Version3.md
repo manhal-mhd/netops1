@@ -18,7 +18,7 @@ Contents
 
 1) Quick setup & safety notes
 - Use your provided lab environment or you can use your own VM
-- Work as a normal user; use sudo only when required.
+- Work as a normal user; use su - only when required.
 - Read commands before Enter. Avoid destructive samples.
 - If on macOS, many commands are similar but package management differs.
 
