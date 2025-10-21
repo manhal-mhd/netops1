@@ -17,7 +17,7 @@ Contents
 ---
 
 1) Quick setup & safety notes
-- Use a VM, container, or disposable cloud instance for practice. For FreeBSD tasks use a FreeBSD VM or cloud image.
+- Use your provided lab environment or you can use your own VM
 - Work as a normal user; use sudo only when required.
 - Read commands before Enter. Avoid destructive samples.
 - If on macOS, many commands are similar but package management differs.
