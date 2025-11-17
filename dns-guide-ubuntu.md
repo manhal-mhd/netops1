@@ -47,30 +47,6 @@ ip addr show
 
 Note the address that is **not** 127.0.0.1 (for example: 10.109.5.28 or 192.168.56.101). Use that IP in dig tests.
 
----
-
-## Stop systemd-resolved (Important)
-Ubuntu's systemd-resolved often binds to port 53. You must stop and disable it first:
-
-```bash
-# Stop systemd-resolved
-sudo service systemd-resolved stop
-
-# Prevent it from starting on boot
-sudo update-rc.d systemd-resolved disable
-
-# Replace /etc/resolv.conf with a static resolver (temporary)
-sudo rm -f /etc/resolv.conf
-echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
-```
-
-Verify it's stopped:
-```bash
-sudo service systemd-resolved status
-```
-
----
-
 ## Option A — Install & Configure BIND (bind9)
 
 ### Step 1: Install bind9
@@ -142,9 +118,6 @@ sudo netstat -ulpn | grep :53
 
 # Or use ss command
 ss -ulpn | grep :53
-
-# View recent logs
-sudo tail -n 50 /var/log/syslog | grep named
 
 # Test the configuration is working
 dig @127.0.0.1 google.com +short
@@ -373,7 +346,6 @@ curl -Lo https://raw.githubusercontent.com/manhal-mhd/netops1/refs/heads/main/Va
 
 ### Step 2: Make Executable and Run
 ```bash
-chmod +x Validate_Forth_Week_Assignment.sh
 bash Validate_Forth_Week_Assignment.sh
 ```
 
@@ -388,4 +360,4 @@ bash Validate_Forth_Week_Assignment.sh
 ---
 
 
-**Good luck with your assignment!**
+**Good luck with your assignment!** 
