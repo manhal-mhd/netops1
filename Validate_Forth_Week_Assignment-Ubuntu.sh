@@ -2,7 +2,7 @@
 #
 # Validate_Forth_Week_Assignment.sh
 # Ubuntu Caching DNS Server Validation Script (using service commands)
-# Checks for bind9 or unbound, ensures only one DNS service runs, and verifies DNS resolution.
+# Fixed to ignore zombie processes
 #
 # Usage: sudo bash Validate_Forth_Week_Assignment.sh
 #
@@ -46,36 +46,34 @@ fi
 is_service_running() {
     local service_name=$1
     
-    # Method 1: Use service command
+    # Method 1: Use service command (most reliable)
     if $HAVE_SERVICE; then
         if service "$service_name" status 2>/dev/null | grep -q "running"; then
             return 0
         fi
     fi
     
-    # Method 2: Check process directly
-    local process_name="$service_name"
-    if [ "$service_name" = "bind9" ]; then
-        process_name="named"
-    fi
-    
-    if command -v pgrep >/dev/null 2>&1; then
-        pgrep -x "$process_name" >/dev/null 2>&1 && return 0
-    fi
-    
-    # Method 3: ps fallback
-    ps aux 2>/dev/null | grep -v grep | grep -w "$process_name" >/dev/null 2>&1 && return 0
-    
     return 1
 }
 
+# Improved process detection that ignores zombie processes
 is_process_running() {
     local name=$1
-    if command -v pgrep >/dev/null 2>&1; then
-        pgrep -x "$name" >/dev/null 2>&1 && return 0
+    
+    # Use ps to check for running (not zombie) processes
+    # Exclude defunct/zombie processes and only show running processes
+    if ps -eo pid,state,comm | grep -v grep | grep -w "$name" | grep -vq "Z"; then
+        return 0
     fi
-    # fallback to ps
-    ps aux 2>/dev/null | grep -v grep | grep -w "$name" >/dev/null 2>&1 && return 0
+    
+    # Alternative method using pgrep (if available)
+    if command -v pgrep >/dev/null 2>&1; then
+        # pgrep by default only shows running processes
+        if pgrep -x "$name" >/dev/null 2>&1; then
+            return 0
+        fi
+    fi
+    
     return 1
 }
 
@@ -87,7 +85,30 @@ is_package_installed() {
     return 1
 }
 
+# Function to check for zombie processes
+check_zombie_processes() {
+    echo "Zombie processes check:"
+    local zombies=0
+    
+    if ps -eo pid,state,comm | grep -w "named" | grep -q "Z"; then
+        echo "⚠️  Zombie named process detected"
+        ((zombies++))
+    fi
+    
+    if ps -eo pid,state,comm | grep -w "unbound" | grep -q "Z"; then
+        echo "⚠️  Zombie unbound process detected"
+        ((zombies++))
+    fi
+    
+    if [ $zombies -eq 0 ]; then
+        echo "✅ No zombie DNS processes"
+    fi
+}
+
 h "Checking DNS Services"
+
+# Check for zombie processes first
+check_zombie_processes
 
 # Check BIND
 bind_installed=false
@@ -116,7 +137,11 @@ h "Service Command Status"
 for service in bind9 unbound; do
     if $HAVE_SERVICE; then
         echo -n "$service: "
-        service "$service" status 2>/dev/null | head -1 || echo "not managed by service command"
+        if service "$service" status >/dev/null 2>&1; then
+            service "$service" status 2>/dev/null | head -1 || echo "service exists but status unavailable"
+        else
+            echo "not managed by service command"
+        fi
     fi
 done
 
@@ -252,18 +277,8 @@ if [ $DNS_RESULT -eq 0 ]; then
         echo "✅ Only one DNS service running"
         if [[ $bind_running == true ]]; then
             echo "✅ BIND is running as caching DNS server"
-            echo ""
-            echo "Service management commands:"
-            echo "  sudo service bind9 status"
-            echo "  sudo service bind9 restart"
-            echo "  sudo service bind9 stop"
         else
             echo "✅ Unbound is running as caching DNS server"
-            echo ""
-            echo "Service management commands:"
-            echo "  sudo service unbound status"
-            echo "  sudo service unbound restart"
-            echo "  sudo service unbound stop"
         fi
         echo ""
         echo "=== Final verification output ==="
@@ -272,42 +287,24 @@ if [ $DNS_RESULT -eq 0 ]; then
     elif [ $running_count -eq 0 ]; then
         echo "⚠️  WARNING: DNS responds but no main DNS service detected"
         echo "   - Another process might be handling DNS queries"
-        echo "   - Install and configure either BIND or Unbound:"
-        echo "     sudo apt update && sudo apt install -y bind9"
-        echo "     OR"
-        echo "     sudo apt update && sudo apt install -y unbound"
         exit 2
     else
         echo "⚠️  WARNING: DNS works but multiple services detected"
-        echo "   - Stop all but one DNS service (BIND OR Unbound):"
-        echo "     sudo service bind9 stop   OR   sudo service unbound stop"
+        echo "   - Stop all but one DNS service (BIND OR Unbound)"
         exit 3
     fi
 else
     echo "❌ FAILED: DNS server not working correctly"
     echo ""
     echo "Troubleshooting steps:"
-    echo "1. Check if DNS service is running:"
-    if [[ $bind_running == false && $unbound_running == false ]]; then
-        echo "   ❌ No DNS service running. Start with:"
-        echo "      sudo service bind9 start   OR   sudo service unbound start"
-    else
-        echo "   ✅ Service is running but not responding correctly"
-    fi
-    echo "2. Check service status:"
-    echo "   sudo service bind9 status   OR   sudo service unbound status"
-    echo "3. Verify service is listening on $SERVER_IP:53"
-    echo "4. Check firewall settings:"
-    echo "   sudo ufw status   OR   sudo iptables -L -n"
-    echo "5. Check DNS configuration:"
-    if [[ $bind_running == true ]]; then
-        echo "   Check /etc/bind/named.conf.local and /etc/bind/named.conf.options"
-    else
-        echo "   Check /etc/unbound/unbound.conf"
-    fi
-    echo "6. Check logs:"
-    echo "   sudo tail -20 /var/log/syslog | grep -i bind"
-    echo "   OR"
-    echo "   sudo tail -20 /var/log/syslog | grep -i unbound"
+    echo "1. Check if DNS service is actually running (not zombie):"
+    echo "   ps -eo pid,state,comm | grep -E '(named|unbound)'"
+    echo "2. Install and configure a DNS server:"
+    echo "   sudo apt update && sudo apt install -y unbound"
+    echo "3. Check service status:"
+    echo "   sudo service unbound status"
+    echo "4. Verify service is listening on $SERVER_IP:53"
+    echo "5. Check logs:"
+    echo "   sudo tail -20 /var/log/syslog"
     exit 1
 fi 
