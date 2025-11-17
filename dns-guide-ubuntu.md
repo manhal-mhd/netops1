@@ -65,8 +65,6 @@ sudo nano /etc/bind/named.conf.options
 Replace or edit the options section with the following (adjust the listen-on IP to match YOUR_SERVER_IP):
 
 ```conf
-options {
-    directory "/var/cache/bind";
     
     recursion yes;                      // enable recursion (caching resolver)
     listen-on { 10.109.5.28; };        // listen on your IPv4 interface (change to your IP)
@@ -75,13 +73,6 @@ options {
     allow-query { 10.109.5.0/24; 127.0.0.1; };  // restrict queries to your subnet
     allow-recursion { 10.109.5.0/24; 127.0.0.1; };
     
-    forwarders {
-        8.8.8.8;
-        1.1.1.1;
-    };
-    
-    dnssec-validation auto;
-};
 ```
 
 **Important**: Replace `10.109.5.28` with your actual server IP and adjust the subnet `10.109.5.0/24` to match your network.
